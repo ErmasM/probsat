@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulasi Statistik Nilai Kuis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f8ff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #4682b4;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    section {
+      max-width: 1000px;
+      margin: auto;
+      padding: 30px;
+    }
+    h2 {
+      color: #4682b4;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+    }
+    .result {
+      margin-top: 20px;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #ddd;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Simulasi Statistik Nilai Kuis</h1>
+    <p>Analisis data nilai kuis secara interaktif</p>
+  </header>
+
+  <section>
+    <h2>Input Parameter Simulasi</h2>
+    <label>Jumlah Mahasiswa:</label>
+    <input type="number" id="jumlah" placeholder="Misal: 10">
+    <label>Nilai Minimum:</label>
+    <input type="number" id="min" placeholder="Misal: 0">
+    <label>Nilai Maksimum:</label>
+    <input type="number" id="max" placeholder="Misal: 100">
+    <button onclick="hitungStatistik()">Generate & Hitung</button>
+
+    <div class="result" id="hasil"></div>
+    <canvas id="chartNilai" width="400" height="200"></canvas>
+  </section>
+
+  <footer>
+    &copy; 2025 | Simulasi Statistik Nilai Kuis - Probabilitas & Statistika
+  </footer>
+
+  <script>
+    let chart;
+    function hitungStatistik() {
+      const jumlah = parseInt(document.getElementById('jumlah').value);
+      const min = parseInt(document.getElementById('min').value);
+      const max = parseInt(document.getElementById('max').value);
+      if (isNaN(jumlah) || isNaN(min) || isNaN(max)) {
+        alert('Isi semua input dengan benar!');
+        return;
+      }
+
+      let data = [];
+      for (let i = 0; i < jumlah; i++) {
+        data.push(Math.floor(Math.random() * (max - min + 1)) + min);
+      }
+
+      const mean = (data.reduce((a, b) => a + b, 0) / jumlah).toFixed(2);
+      const sorted = [...data].sort((a, b) => a - b);
+      const median = jumlah % 2 === 0 ? ((sorted[jumlah/2 - 1] + sorted[jumlah/2]) / 2).toFixed(2) : sorted[Math.floor(jumlah / 2)];
+
+      const count = {};
+      let modus = data[0];
+      data.forEach(n => {
+        count[n] = (count[n] || 0) + 1;
+        if (count[n] > (count[modus] || 0)) modus = n;
+      });
+
+      const range = Math.max(...data) - Math.min(...data);
+
+      document.getElementById('hasil').innerHTML = `
+        <h3>Hasil Analisis Statistik</h3>
+        <p><strong>Data Nilai:</strong> [${data.join(', ')}]</p>
+        <p><strong>Mean:</strong> ${mean}</p>
+        <p><strong>Median:</strong> ${median}</p>
+        <p><strong>Modus:</strong> ${modus}</p>
+        <p><strong>Range:</strong> ${range}</p>
+      `;
+
+      // Chart
+      const labels = Object.keys(count);
+      const values = Object.values(count);
+
+      if (chart) {
+        chart.destroy();
+      }
+
+      const ctx = document.getElementById('chartNilai').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Frekuensi Nilai',
+            data: values,
+            backgroundColor: '#4682b4'
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
